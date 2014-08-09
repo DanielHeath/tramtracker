@@ -2,7 +2,8 @@
 
 ## Usage
 
-See tramtracker_test.go for examples.
+
+See [the godoc](http://godoc.org/github.com/danielheath/tramtracker) or `tramtracker_test.go for examples.
 
 ## Licence
 
