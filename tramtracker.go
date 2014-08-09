@@ -1,3 +1,7 @@
+// Package tramtracker fetches tram arrival data from the tramtracker JSON api.
+//
+// MIT licenced, (c) Daniel Heath
+
 package tramtracker
 
 import (
@@ -8,7 +12,7 @@ import (
 	"time"
 )
 
-var TramTrackerUrl string
+var tramTrackerUrl string
 
 type TrackerResponse struct {
 	WebMethodCalled string          `json:"webMethodCalled"`
@@ -83,7 +87,7 @@ func NextTrams(q Query) (*TrackerResponse, error) {
 var now func() time.Time
 
 func init() {
-	TramTrackerUrl = "http://tramtracker.com.au/Controllers/GetNextPredictionsForStop.ashx?stopNo=%d&routeNo=%d&isLowFloor=%t"
+	tramTrackerUrl = "http://tramtracker.com.au/Controllers/GetNextPredictionsForStop.ashx?stopNo=%d&routeNo=%d&isLowFloor=%t"
 	now = time.Now
 }
 

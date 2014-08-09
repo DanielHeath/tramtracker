@@ -12,13 +12,13 @@ func init() {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, cannedTramQuery)
 	}))
-	TramTrackerUrl = srv.URL + "/%d_%d_%t"
+	tramTrackerUrl = srv.URL + "/%d_%d_%t"
 	now = func() time.Time {
 		return time.Unix(1407550175, 0)
 	}
 }
 
-func ExampleTramTime() {
+func ExampleNextTrams() {
 	trams, _ := NextTrams(Query{StopId: 1234})
 	for _, tram := range trams.Upcoming {
 		minutesAway := int(tram.PredictedTime.Sub(now()).Minutes())
@@ -31,7 +31,7 @@ func ExampleTramTime() {
 	// 109 in 24 minutes (12:33pm)
 }
 
-func ExampleWaitTime() {
+func ExampleTrackerResponse_WaitTime() {
 	trams, _ := NextTrams(Query{StopId: 1234})
 
 	// If I run and take 4 minutes to get to the stop
@@ -45,7 +45,7 @@ func ExampleWaitTime() {
 	// 9m49s
 }
 
-func ExampleAlert() {
+func ExampleTrackerResponse_AnyWaitOver() {
 	trams, _ := NextTrams(Query{StopId: 1234})
 
 	droughtStart, droughtEnd, longWait := trams.AnyWaitOver(time.Minute * 8)
