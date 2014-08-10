@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-var tramTrackerUrl string
-
 type TrackerResponse struct {
 	WebMethodCalled string          `json:"webMethodCalled"`
 	HasResponse     bool            `json:"hasResponse"`
@@ -64,13 +62,16 @@ func (d *TramTrackerDate) UnmarshalJSON(json []byte) error {
 
 type Query struct {
 	StopId   int
-	RouteNo  int
-	LowFloor bool
+	RouteNo  int    // Optional
+	LowFloor bool   // Optional
+	Url      string // Optional; overrides all other query params
 }
 
 func NextTrams(q Query) (*TrackerResponse, error) {
-	url := fmt.Sprintf(TramTrackerUrl, q.StopId, q.RouteNo, q.LowFloor)
-	resp, err := http.Get(url)
+	if q.Url == "" {
+		q.Url = fmt.Sprintf(defaultUrl, q.StopId, q.RouteNo, q.LowFloor)
+	}
+	resp, err := http.Get(q.Url)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +87,9 @@ func NextTrams(q Query) (*TrackerResponse, error) {
 
 var now func() time.Time
 
+const defaultUrl = "http://tramtracker.com.au/Controllers/GetNextPredictionsForStop.ashx?stopNo=%d&routeNo=%d&isLowFloor=%t"
+
 func init() {
-	tramTrackerUrl = "http://tramtracker.com.au/Controllers/GetNextPredictionsForStop.ashx?stopNo=%d&routeNo=%d&isLowFloor=%t"
 	now = time.Now
 }
 

@@ -8,18 +8,27 @@ import (
 	"time"
 )
 
-func init() {
+func tramTrackerUrl(responses []string) string {
+	i := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, cannedTramQuery)
+		fmt.Fprintln(w, responses[i])
+		i += 1
 	}))
-	tramTrackerUrl = srv.URL + "/%d_%d_%t"
+	return srv.URL
+}
+
+func init() {
 	now = func() time.Time {
 		return time.Unix(1407550175, 0)
 	}
 }
 
+const defaultApiResponse = `{"errorMessage":null,"hasError":false,"hasResponse":true,"responseObject":[{"__type":"NextPredictedRoutesCollectionInfo","AirConditioned":false,"Destination":"Port Melbourne","DisplayAC":false,"DisruptionMessage":{"DisplayType":"Text","MessageCount":0,"Messages":[]},"HasDisruption":false,"HasSpecialEvent":true,"HeadBoardRouteNo":"109","InternalRouteNo":109,"IsLowFloorTram":true,"IsTTAvailable":true,"PredictedArrivalDateTime":"\/Date(1407550475481+1000)\/","RouteNo":"109","SpecialEventMessage":"From 27 July Route 12 operates between Stop 24 Victoria Gardens, Burnley St and St Kilda via Collins St","TripID":0,"VehicleNo":3004},{"__type":"NextPredictedRoutesCollectionInfo","AirConditioned":false,"Destination":"Port Melbourne","DisplayAC":false,"DisruptionMessage":{"DisplayType":"Text","MessageCount":0,"Messages":[]},"HasDisruption":false,"HasSpecialEvent":true,"HeadBoardRouteNo":"109","InternalRouteNo":109,"IsLowFloorTram":true,"IsTTAvailable":true,"PredictedArrivalDateTime":"\/Date(1407551124000+1000)\/","RouteNo":"109","SpecialEventMessage":"From 27 July Route 12 operates between Stop 24 Victoria Gardens, Burnley St and St Kilda via Collins St","TripID":0,"VehicleNo":3011},{"__type":"NextPredictedRoutesCollectionInfo","AirConditioned":false,"Destination":"Port Melbourne","DisplayAC":false,"DisruptionMessage":{"DisplayType":"Text","MessageCount":0,"Messages":[]},"HasDisruption":false,"HasSpecialEvent":true,"HeadBoardRouteNo":"109","InternalRouteNo":109,"IsLowFloorTram":true,"IsTTAvailable":true,"PredictedArrivalDateTime":"\/Date(1407551628000+1000)\/","RouteNo":"109","SpecialEventMessage":"From 27 July Route 12 operates between Stop 24 Victoria Gardens, Burnley St and St Kilda via Collins St","TripID":0,"VehicleNo":3033}],"timeRequested":"\/Date(1407550465405+1000)\/","timeResponded":"\/Date(1407550465481+1000)\/","webMethodCalled":"GetNextPredictedRoutesCollection"}`
+
 func ExampleNextTrams() {
-	trams, _ := NextTrams(Query{StopId: 1234})
+	url := tramTrackerUrl([]string{defaultApiResponse})
+
+	trams, _ := NextTrams(Query{StopId: 1234, Url: url})
 	for _, tram := range trams.Upcoming {
 		minutesAway := int(tram.PredictedTime.Sub(now()).Minutes())
 		arrival := tram.PredictedTime.Format("3:04pm")
@@ -32,7 +41,8 @@ func ExampleNextTrams() {
 }
 
 func ExampleTrackerResponse_WaitTime() {
-	trams, _ := NextTrams(Query{StopId: 1234})
+	url := tramTrackerUrl([]string{defaultApiResponse})
+	trams, _ := NextTrams(Query{StopId: 1234, Url: url})
 
 	// If I run and take 4 minutes to get to the stop
 	fmt.Println(trams.WaitTime(time.Minute * 4))
@@ -46,7 +56,8 @@ func ExampleTrackerResponse_WaitTime() {
 }
 
 func ExampleTrackerResponse_AnyWaitOver() {
-	trams, _ := NextTrams(Query{StopId: 1234})
+	url := tramTrackerUrl([]string{defaultApiResponse})
+	trams, _ := NextTrams(Query{StopId: 1234, Url: url})
 
 	droughtStart, droughtEnd, longWait := trams.AnyWaitOver(time.Minute * 8)
 	if longWait {
@@ -62,7 +73,3 @@ func ExampleTrackerResponse_AnyWaitOver() {
 	// Long wait: there's a tram in 5m0s, then nothing for 10m49s
 	// No wait over 12 minutes
 }
-
-const cannedTramQuery = `
-{"errorMessage":null,"hasError":false,"hasResponse":true,"responseObject":[{"__type":"NextPredictedRoutesCollectionInfo","AirConditioned":false,"Destination":"Port Melbourne","DisplayAC":false,"DisruptionMessage":{"DisplayType":"Text","MessageCount":0,"Messages":[]},"HasDisruption":false,"HasSpecialEvent":true,"HeadBoardRouteNo":"109","InternalRouteNo":109,"IsLowFloorTram":true,"IsTTAvailable":true,"PredictedArrivalDateTime":"\/Date(1407550475481+1000)\/","RouteNo":"109","SpecialEventMessage":"From 27 July Route 12 operates between Stop 24 Victoria Gardens, Burnley St and St Kilda via Collins St","TripID":0,"VehicleNo":3004},{"__type":"NextPredictedRoutesCollectionInfo","AirConditioned":false,"Destination":"Port Melbourne","DisplayAC":false,"DisruptionMessage":{"DisplayType":"Text","MessageCount":0,"Messages":[]},"HasDisruption":false,"HasSpecialEvent":true,"HeadBoardRouteNo":"109","InternalRouteNo":109,"IsLowFloorTram":true,"IsTTAvailable":true,"PredictedArrivalDateTime":"\/Date(1407551124000+1000)\/","RouteNo":"109","SpecialEventMessage":"From 27 July Route 12 operates between Stop 24 Victoria Gardens, Burnley St and St Kilda via Collins St","TripID":0,"VehicleNo":3011},{"__type":"NextPredictedRoutesCollectionInfo","AirConditioned":false,"Destination":"Port Melbourne","DisplayAC":false,"DisruptionMessage":{"DisplayType":"Text","MessageCount":0,"Messages":[]},"HasDisruption":false,"HasSpecialEvent":true,"HeadBoardRouteNo":"109","InternalRouteNo":109,"IsLowFloorTram":true,"IsTTAvailable":true,"PredictedArrivalDateTime":"\/Date(1407551628000+1000)\/","RouteNo":"109","SpecialEventMessage":"From 27 July Route 12 operates between Stop 24 Victoria Gardens, Burnley St and St Kilda via Collins St","TripID":0,"VehicleNo":3033}],"timeRequested":"\/Date(1407550465405+1000)\/","timeResponded":"\/Date(1407550465481+1000)\/","webMethodCalled":"GetNextPredictedRoutesCollection"}
-`
