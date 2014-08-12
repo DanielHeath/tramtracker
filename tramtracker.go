@@ -56,7 +56,7 @@ func (d *TramTrackerDate) UnmarshalJSON(json []byte) error {
 	if err != nil {
 		return err
 	}
-	d.Time = time.Unix(n, 0)
+	d.Time = time.Unix(n, 0).In(melbourne)
 	return nil
 }
 
@@ -85,11 +85,18 @@ func NextTrams(q Query) (*TrackerResponse, error) {
 	return &result, nil
 }
 
-var now func() time.Time
-
 const defaultUrl = "http://tramtracker.com.au/Controllers/GetNextPredictionsForStop.ashx?stopNo=%d&routeNo=%d&isLowFloor=%t"
 
+var now func() time.Time
+var melbourne *time.Location
+
 func init() {
+	var err error
+	melbourne, err = time.LoadLocation("Australia/Melbourne")
+	if err != nil {
+		panic(err)
+	}
+
 	now = time.Now
 }
 

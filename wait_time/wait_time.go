@@ -45,6 +45,7 @@ func NewWaitTimeWarner(max time.Duration) WaitTimeWarner {
 
 func (w WaitTimeWarner) Warn(tt tramtracker.TrackerResponse) {
 	for _, wt := range WaitTimes(tt) {
+
 		if wt.Duration > w.warnIfLongerThan {
 			if w.alreadyWarned[wt.VehicleNo] {
 				// No need to do anything
